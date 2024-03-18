@@ -1,7 +1,7 @@
 // @todo: Темплейт карточки
 
 // @todo: DOM узлы
-const cardsConteiner = document.querySelector('.places__list');
+const cardsContainer = document.querySelector('.places__list');
 
 // @todo: Функция создания карточки
 const addCard = function (cardImage, cardTitle, removeCard) {
@@ -15,7 +15,7 @@ const addCard = function (cardImage, cardTitle, removeCard) {
 
   deleteButton.addEventListener('click', removeCard);
 
-  cardsConteiner.append(cardElement);
+  cardsContainer.append(cardElement);
 };
 // @todo: Функция удаления карточки
 const removeCard = function (evt) {
