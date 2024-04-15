@@ -1,11 +1,8 @@
 import '../pages/index.css';
 
-import {
-  createCard,
-  initialCards,
-  removeCard,
-  likeCard,
-} from '../components/cards';
+import { createCard, removeCard, likeCard } from '../components/card';
+
+import initialCards from '../components/cards';
 
 import { openedModal, closeModal } from '../components/modal';
 
