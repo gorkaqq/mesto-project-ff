@@ -24,7 +24,7 @@ export const initialCards = [
     link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/baikal.jpg',
   },
 ];
-import { openedModal, closeModal } from './modal';
+
 // Функция создания карточки
 export const createCard = function (
   cardImage,
@@ -61,16 +61,3 @@ export const likeCard = function (evt) {
     evt.target.classList.toggle('card__like-button_is-active');
   }
 };
-
-export const openImage = function (evt) {
-  const target = evt.target;
-  const cardImagePopup = document.querySelector('.popup_type_image');
-  openedModal(cardImagePopup);
-  const popupImage = cardImagePopup.querySelector('.popup__image');
-  popupImage.src = target.src;
-  popupImage.alt = target.alt;
-  popupImage.nextElementSibling.textContent =
-    target.nextElementSibling.nextElementSibling.textContent;
-};
-
-export { openedModal, closeModal };
