@@ -7,6 +7,7 @@ export const openedModal = function (popup) {
 export const closeModal = function (popup) {
   popup.classList.remove('popup_is-opened');
   document.removeEventListener('keydown', closeByEscape);
+  popup.removeEventListener('click', closeByOverlay);
 };
 
 // Закрытие окна на Escape

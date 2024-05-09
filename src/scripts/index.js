@@ -1,6 +1,6 @@
 import '../pages/index.css';
 
-import { createCard, removeCard, likeCard } from '../components/card';
+import { createCard, likeCard } from '../components/card';
 
 // import initialCards from '../components/cards';
 
@@ -13,6 +13,7 @@ import {
   addCard,
   checkUrl,
   replaceAvatar,
+  deleteCard,
 } from '../components/api';
 
 const cardsContainer = document.querySelector('.places__list');
@@ -30,6 +31,9 @@ const jobInput = formEditProfile.querySelector(
 const formNewPlace = document.forms['new-place'];
 // Форма обновить аватар
 const formNewAvatar = document.forms['new-avatar'];
+// Форма подтверждения удаления
+const formDeleteCard = document.forms['delete-card'];
+let cardClickedId = '';
 
 // Инпуты формы добавления картинки
 const cardNameInput = formNewPlace.querySelector(
@@ -51,6 +55,14 @@ const editAvatarPopup = document.querySelector('.popup_type_new-avatar');
 // Кнопка закрыть окно
 const closePopupButton = document.querySelectorAll('.popup__close');
 
+// Элементы имени и описания пользователя
+const userNameElement = document.querySelector('.profile__title');
+const userDescriptionElement = document.querySelector('.profile__description');
+
+// Элементы попапа с картинкой
+const cardImagePopup = document.querySelector('.popup_type_image');
+const popupImage = cardImagePopup.querySelector('.popup__image');
+
 const validationConfig = {
   inputSelector: '.popup__input',
   submitButtonSelector: '.popup__button',
@@ -58,11 +70,34 @@ const validationConfig = {
   inputErrorClass: 'popup__input_type_error',
 };
 
+const removeCard = function (evt) {
+  openedModal(document.querySelector('.popup_type_delete-card'));
+  cardClickedId = evt.target.closest('.card').id;
+};
+
+const handleFormRemoveCard = function (evt) {
+  evt.preventDefault();
+  evt.submitter.textContent = 'Удаление...';
+
+  deleteCard(cardClickedId)
+    .then(() => {
+      document.getElementById(cardClickedId).remove();
+      cardClickedId = '';
+      closeModal(formDeleteCard.closest('.popup'));
+    })
+    .catch((err) => console.log(err))
+    .finally(() => {
+      evt.submitter.textContent = 'Да';
+    });
+};
+
+formDeleteCard.addEventListener('submit', handleFormRemoveCard);
+
 // Открыть редактирование профиля
 editProfileButton.addEventListener('click', function () {
   openedModal(editProfilePopup);
-  nameInput.value = document.querySelector('.profile__title').textContent;
-  jobInput.value = document.querySelector('.profile__description').textContent;
+  nameInput.value = userNameElement.textContent;
+  jobInput.value = userDescriptionElement.textContent;
   clearValidation(formEditProfile, validationConfig);
 });
 
@@ -91,28 +126,27 @@ closePopupButton.forEach(function (button) {
 
 const handleFormEditProfileSubmit = function (evt) {
   evt.preventDefault();
-  formEditProfile.querySelector('.popup__button').textContent = 'Сохранение...';
+  evt.submitter.textContent = 'Сохранение...';
   const jobValue = jobInput.value;
   const nameValue = nameInput.value;
 
   editProfile(nameValue, jobValue)
     .then((user) => {
-      document.querySelector('.profile__title').textContent = user.name;
-      document.querySelector('.profile__description').textContent = user.about;
+      userNameElement.textContent = user.name;
+      userDescriptionElement.textContent = user.about;
+      closeModal(formEditProfile.closest('.popup'));
     })
+    .catch((err) => console.log(err))
     .finally(() => {
-      formEditProfile.querySelector('.popup__button').textContent = 'Сохранить';
+      evt.submitter.textContent = 'Сохранить';
     });
-
-  closeModal(formEditProfile.closest('.popup'));
-  formEditProfile.reset();
 };
 
 formEditProfile.addEventListener('submit', handleFormEditProfileSubmit);
 
 const handleFormNewPlaceSubmit = function (evt) {
   evt.preventDefault();
-  formNewPlace.querySelector('.popup__button').textContent = 'Сохранение...';
+  evt.submitter.textContent = 'Сохранение...';
 
   const cardNameValue = cardNameInput.value;
   const urlInputValue = urlInputNewPlace.value;
@@ -126,35 +160,48 @@ const handleFormNewPlaceSubmit = function (evt) {
           removeCard,
           openImage,
           likeCard,
-          card._id
+          card._id,
+          card.owner._id,
+          card.owner._id,
+          card.likes
         )
       );
+      closeModal(formNewPlace.closest('.popup'));
     })
+    .catch((err) => console.log(err))
     .finally(() => {
-      formNewPlace.querySelector('.popup__button').textContent = 'Сохранить';
+      evt.submitter.textContent = 'Сохранить';
     });
-
-  closeModal(formNewPlace.closest('.popup'));
 };
 
 formNewPlace.addEventListener('submit', handleFormNewPlaceSubmit);
 
 const handleFormNewAvatarSubmit = function (evt) {
   evt.preventDefault();
-  formNewAvatar.querySelector('.popup__button').textContent = 'Сохранение...';
+  evt.submitter.textContent = 'Сохранение...';
 
   const urlInputValue = urlInputNewAvatar.value;
 
-  if (checkUrl(urlInputValue)) {
-    replaceAvatar(urlInputValue).finally(() => {
-      formNewAvatar.querySelector('.popup__button').textContent =
-        'Сохранить...';
+  checkUrl(urlInputValue)
+    .then((res) => {
+      if (res.ok && res.headers.get('content-type').includes('image')) {
+        return Promise.resolve();
+      }
+      return Promise.reject(`Ошибка: ${res.status}`);
+    })
+    .then(() => {
+      return replaceAvatar(urlInputValue);
+    })
+    .then(() => {
+      document.querySelector(
+        '.profile__image'
+      ).style.backgroundImage = `url(${urlInputValue})`;
+      closeModal(formNewAvatar.closest('.popup'));
+    })
+    .catch((err) => console.log(err))
+    .finally(() => {
+      evt.submitter.textContent = 'Сохранить';
     });
-    document.querySelector(
-      '.profile__image'
-    ).style.backgroundImage = `url(${urlInputValue})`;
-  }
-  closeModal(formNewAvatar.closest('.popup'));
 };
 
 formNewAvatar.addEventListener('submit', handleFormNewAvatarSubmit);
@@ -162,14 +209,13 @@ formNewAvatar.addEventListener('submit', handleFormNewAvatarSubmit);
 // Открытие попапа при клике по изображению
 const openImage = function (evt) {
   const target = evt.target;
-  const cardImagePopup = document.querySelector('.popup_type_image');
   openedModal(cardImagePopup);
-  const popupImage = cardImagePopup.querySelector('.popup__image');
   popupImage.src = target.src;
   popupImage.alt = target.alt;
 
-  popupImage.nextElementSibling.textContent =
-    target.parentElement.querySelector('.card__title').textContent;
+  popupImage.nextElementSibling.textContent = target
+    .closest('.card')
+    .querySelector('.card__title').textContent;
 };
 
 // Вывести карточки на страницу, получить данные пользователя
@@ -185,7 +231,8 @@ Promise.all([getInitialCards(), getUserInfo()])
           likeCard,
           card._id,
           user._id,
-          card.owner._id
+          card.owner._id,
+          card.likes
         )
       );
     });
@@ -193,8 +240,8 @@ Promise.all([getInitialCards(), getUserInfo()])
     document.querySelector(
       '.profile__image'
     ).style.backgroundImage = `url(${user.avatar})`;
-    document.querySelector('.profile__title').textContent = user.name;
-    document.querySelector('.profile__description').textContent = user.about;
+    userNameElement.textContent = user.name;
+    userDescriptionElement.textContent = user.about;
   })
   .catch((err) => console.log(err));
 

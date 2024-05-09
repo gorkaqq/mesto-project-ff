@@ -111,4 +111,5 @@ export const clearValidation = function (formElement, validationConfig) {
   });
 
   buttonElement.classList.add(validationConfig.inactiveButtonClass);
+  buttonElement.disabled = true;
 };
