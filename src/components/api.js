@@ -49,7 +49,7 @@ export const editProfile = function (name, about) {
 };
 
 export const deleteCard = function (cardId) {
-  return fetch(`${config.cardsUrl}/${cardId}`, {
+  return request(`${config.cardsUrl}/${cardId}`, {
     method: 'DELETE',
     headers: {
       authorization: config.headers.authorization,
@@ -80,7 +80,7 @@ export const checkUrl = function (url) {
 };
 
 export const replaceAvatar = function (url) {
-  return fetch(`${config.profileUrl}/avatar`, {
+  return request(`${config.profileUrl}/avatar`, {
     method: 'PATCH',
     headers: config.headers,
     body: JSON.stringify({

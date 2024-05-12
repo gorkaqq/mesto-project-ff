@@ -51,9 +51,10 @@ const editAvatar = document.querySelector('.profile__image');
 const editProfilePopup = document.querySelector('.popup_type_edit');
 const addCardPopup = document.querySelector('.popup_type_new-card');
 const editAvatarPopup = document.querySelector('.popup_type_new-avatar');
+const deleteCardPopup = document.querySelector('.popup_type_delete-card');
 
 // Кнопка закрыть окно
-const closePopupButton = document.querySelectorAll('.popup__close');
+const closePopupButtons = document.querySelectorAll('.popup__close');
 
 // Элементы имени и описания пользователя
 const userNameElement = document.querySelector('.profile__title');
@@ -71,7 +72,7 @@ const validationConfig = {
 };
 
 const removeCard = function (evt) {
-  openedModal(document.querySelector('.popup_type_delete-card'));
+  openedModal(deleteCardPopup);
   cardClickedId = evt.target.closest('.card').id;
 };
 
@@ -116,7 +117,7 @@ addCardButton.addEventListener('click', function () {
 });
 
 // Закрытие окна на крестик
-closePopupButton.forEach(function (button) {
+closePopupButtons.forEach(function (button) {
   button.addEventListener('click', function (evt) {
     evt.stopPropagation();
     const parentPopup = evt.target.closest('.popup');
@@ -193,9 +194,7 @@ const handleFormNewAvatarSubmit = function (evt) {
       return replaceAvatar(urlInputValue);
     })
     .then(() => {
-      document.querySelector(
-        '.profile__image'
-      ).style.backgroundImage = `url(${urlInputValue})`;
+      editAvatar.style.backgroundImage = `url(${urlInputValue})`;
       closeModal(formNewAvatar.closest('.popup'));
     })
     .catch((err) => console.log(err))
@@ -237,9 +236,7 @@ Promise.all([getInitialCards(), getUserInfo()])
       );
     });
 
-    document.querySelector(
-      '.profile__image'
-    ).style.backgroundImage = `url(${user.avatar})`;
+    editAvatar.style.backgroundImage = `url(${user.avatar})`;
     userNameElement.textContent = user.name;
     userDescriptionElement.textContent = user.about;
   })
